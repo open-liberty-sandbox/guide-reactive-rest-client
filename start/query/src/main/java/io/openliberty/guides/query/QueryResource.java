@@ -31,19 +31,16 @@ public class QueryResource {
         List<String> systems = inventoryClient.getSystems();
         CountDownLatch remainingSystems = new CountDownLatch(systems.size());
         final Holder systemLoads = new Holder();
-
         for (String system : systems) {
             inventoryClient.getSystem(system)
-                    .thenAcceptAsync(p -> {
+                    .subscribe(p -> {
                         if (p != null) {
                             systemLoads.updateValues(p);
                         }
                         remainingSystems.countDown();
-                    })
-                    .exceptionally(ex -> {
+                    }, e -> {
                         remainingSystems.countDown();
-                        ex.printStackTrace();
-                        return null;
+                        e.printStackTrace();
                     });
         }
 
